@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f1eb">
+  <meta name="color-scheme" content="light">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pyykkisähkö">
+  <title>Pyykkisähkö – milloin kone päälle?</title>
+  <style>
+    :root {
+      --bg:#f4f1eb; --paper:#fffdf9; --panel:#faf7f1; --line:#ddd7cd;
+      --text:#252521; --muted:#716f68; --accent:#b85c44; --accent-soft:#f1ded6;
+      --sage:#788873; --sage-soft:#e4e9df; --danger:#9d3f43; --radius:22px;
+      --shadow:0 14px 38px rgba(54,47,38,.09);
+    }
+    * { box-sizing:border-box; }
+    html { background:var(--bg); -webkit-text-size-adjust:100%; }
+    body { margin:0; min-height:100dvh; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif; }
+    body::before { content:""; position:fixed; inset:0 0 auto; height:250px; pointer-events:none; background:radial-gradient(circle at 88% 8%,rgba(184,92,68,.13),transparent 37%),radial-gradient(circle at 5% 5%,rgba(120,136,115,.13),transparent 30%); }
+    button,input { font:inherit; } button { color:inherit; -webkit-tap-highlight-color:transparent; }
+    .app { position:relative; width:min(100%,460px); min-height:100dvh; margin:0 auto; padding:calc(19px + env(safe-area-inset-top)) 17px calc(104px + env(safe-area-inset-bottom)); }
+    header { display:flex; justify-content:space-between; align-items:center; padding:5px 2px 13px; }
+    .brand { display:flex; align-items:center; gap:7px; color:var(--accent); font-size:11px; font-weight:780; letter-spacing:.16em; text-transform:uppercase; }
+    h1,h2 { font-family:Iowan Old Style,"Palatino Linotype",Palatino,Georgia,serif; font-weight:600; }
+    h1 { margin:6px 0 0; max-width:280px; font-size:30px; line-height:1.02; letter-spacing:-.035em; }
+    .refresh { display:grid; place-items:center; width:44px; height:44px; border:1px solid var(--line); border-radius:50%; background:rgba(255,253,249,.78); box-shadow:0 7px 20px rgba(54,47,38,.07); cursor:pointer; backdrop-filter:blur(12px); }
+    .refresh:active { transform:scale(.95); } .refresh[disabled] { opacity:.5; }
+    .spin { animation:spin 1s linear infinite; } @keyframes spin { to { transform:rotate(360deg); } }
+    .hero { position:relative; overflow:hidden; margin-top:8px; padding:21px; border:1px solid rgba(184,92,68,.18); border-radius:28px; background:linear-gradient(145deg,#f7e8e1 0%,#fffaf4 60%,#e9eee5 100%); box-shadow:var(--shadow); }
+    .hero::after { content:""; position:absolute; width:105px; height:105px; right:-35px; bottom:-52px; border:1px solid rgba(184,92,68,.24); border-radius:50%; box-shadow:0 0 0 18px rgba(184,92,68,.045),0 0 0 36px rgba(120,136,115,.04); }
+    .hero-top { position:relative; z-index:1; display:flex; justify-content:space-between; gap:15px; }
+    .eyebrow { margin:0; color:var(--accent); font-size:12px; font-weight:750; letter-spacing:.04em; text-transform:uppercase; }
+    h2 { margin:5px 0 0; max-width:280px; font-size:22px; line-height:1.12; letter-spacing:-.025em; }
+    .hero-top>span { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:rgba(255,255,255,.55); }
+    .description { position:relative; z-index:1; margin:13px 0 0; max-width:355px; color:#625f58; font-size:13px; line-height:1.55; }
+    .slots { display:grid; gap:12px; margin-top:17px; }
+    .slot { position:relative; width:100%; padding:17px; border:1px solid var(--line); border-radius:var(--radius); background:rgba(255,253,249,.84); box-shadow:0 8px 24px rgba(54,47,38,.055); text-align:left; cursor:pointer; animation:rise .35s ease both; backdrop-filter:blur(10px); }
+    .slot.best { border-color:rgba(184,92,68,.38); background:var(--paper); box-shadow:0 14px 34px rgba(126,74,55,.12); }
+    .slot.best::before { content:"Paras valinta"; position:absolute; top:-9px; right:15px; padding:5px 9px; border-radius:999px; background:var(--accent); color:#fffaf5; font-size:9px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; }
+    @keyframes rise { from { opacity:0; transform:translateY(10px); } }
+    .slot-main { display:flex; align-items:center; gap:12px; }
+    .rank { display:grid; flex:0 0 auto; place-items:center; width:42px; height:42px; border:1px solid var(--line); border-radius:50%; background:var(--panel); color:var(--muted); font-family:Georgia,serif; font-size:18px; font-weight:600; }
+    .best .rank { border-color:transparent; background:var(--accent-soft); color:var(--accent); }
+    .time-block { min-width:0; flex:1; } .day { color:var(--muted); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.045em; }
+    .time { margin-top:3px; font-family:Iowan Old Style,Georgia,serif; font-size:clamp(22px,6vw,27px); font-weight:600; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+    .price { min-width:96px; padding:10px 8px; border:1px solid rgba(120,136,115,.3); border-radius:15px; background:var(--sage-soft); text-align:center; color:#50604c; font-size:20px; line-height:1; font-weight:820; font-variant-numeric:tabular-nums; }
+    .unit { margin-top:5px; color:#6e786a; font-size:10px; font-weight:500; }
+    .slot-foot { margin-top:13px; padding-top:12px; border-top:1px solid #e8e2d9; }
+    .device-costs { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+    .device-cost { padding:9px 8px; border-radius:13px; background:var(--panel); }
+    .device-name { min-height:24px; color:var(--muted); font-size:9px; line-height:1.25; }
+    .device-price { margin-top:4px; color:var(--text); font-size:14px; font-weight:800; }
+    .saving { padding:6px 9px; border-radius:999px; background:var(--sage-soft)!important; color:#536450!important; font-size:11px; font-weight:700; text-align:right; }
+    .details { display:none; gap:7px; margin-top:12px; padding-top:12px; border-top:1px solid #e8e2d9; } .slot.open .details { display:flex; }
+    .hour { flex:1; padding:9px 4px; border-radius:12px; background:#f1ede6; text-align:center; }.hour-label { color:var(--muted); font-size:9px; }.hour-price { margin-top:4px; font-size:12px; font-weight:750; }
+    .consumption-note { margin-top:16px; padding:14px 15px; border:1px solid var(--line); border-radius:17px; background:rgba(255,253,249,.58); color:var(--muted); font-size:11px; line-height:1.5; }
+    .message { margin-top:16px; padding:16px; border:1px solid var(--line); border-radius:18px; background:var(--paper); color:var(--muted); font-size:14px; line-height:1.45; }.message.error { border-color:#e5bdbe; background:#faeaea; color:var(--danger); }.retry { margin-top:9px; padding:0; border:0; background:none; color:inherit; font-weight:750; text-decoration:underline; cursor:pointer; }
+    .skeleton { height:122px; border-radius:var(--radius); background:linear-gradient(90deg,#ebe6de,#f6f2eb,#ebe6de); background-size:200% 100%; animation:shimmer 1.3s infinite; } @keyframes shimmer { to { background-position:-200% 0; } }
+    footer { margin-top:18px; text-align:center; color:#8a867e; font-size:11px; line-height:1.55; }.fine { margin-top:3px; font-size:10px; color:#aaa49a; }
+    .day-toggle-wrap { position:fixed; z-index:20; left:0; right:0; bottom:0; padding:11px 16px calc(10px + env(safe-area-inset-bottom)); background:linear-gradient(180deg,rgba(244,241,235,0),rgba(244,241,235,.97) 28%); pointer-events:none; }
+    .day-toggle { display:grid; grid-template-columns:1fr 1fr; gap:5px; width:min(100%,428px); margin:0 auto; padding:5px; border:1px solid rgba(126,117,103,.23); border-radius:20px; background:rgba(255,253,249,.91); box-shadow:0 13px 35px rgba(54,47,38,.16); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); pointer-events:auto; }
+    .day-toggle button { min-height:52px; padding:6px 10px; border:0; border-radius:15px; background:transparent; color:var(--muted); font-weight:780; cursor:pointer; touch-action:manipulation; }
+    .day-toggle button.active { background:var(--text); color:#fffdf9; box-shadow:0 6px 16px rgba(37,37,33,.18); }
+    .day-toggle button:disabled { cursor:not-allowed; color:#aaa49a; opacity:1; }
+    .day-main { display:block; font-size:15px; line-height:1.15; }.day-hint { display:block; margin-top:3px; font-size:10px; line-height:1.1; font-weight:620; }
+    svg { display:block; } @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; scroll-behavior:auto!important; } }
+  
+    /* Mobile and iOS hardening */
+    html, body { width:100%; overflow-x:hidden; }
+    body { overscroll-behavior-y:none; -webkit-font-smoothing:antialiased; }
+    .app { overflow-wrap:break-word; }
+    .slot { min-width:0; touch-action:manipulation; }
+    .time-block { overflow:hidden; }
+    .time { white-space:nowrap; }
+    .price { flex:0 0 auto; }
+    .refresh, .day-toggle button { min-width:44px; min-height:44px; }
+    @media (max-width:380px) {
+      .app { padding-left:12px; padding-right:12px; }
+      h1 { font-size:clamp(27px,9vw,30px); }
+      .slot { padding:15px 13px; }
+      .slot-main { gap:9px; }
+      .rank { width:38px; height:38px; font-size:16px; }
+      .time { font-size:clamp(20px,6.3vw,24px); }
+      .price { min-width:84px; padding:9px 6px; font-size:18px; }
+      .device-costs { gap:5px; }
+      .device-cost { padding:8px 6px; }
+      .device-name { font-size:8.5px; }
+      .device-price { font-size:13px; }
+    }
+    @media (max-width:340px) {
+      header { align-items:flex-start; }
+      .slot-main { display:grid; grid-template-columns:38px minmax(0,1fr); }
+      .price { grid-column:2; justify-self:start; min-width:0; }
+      .device-costs { grid-template-columns:1fr; }
+      .device-name { min-height:0; }
+    }
+    @media (hover:hover) and (pointer:fine) {
+      .slot:hover { transform:translateY(-1px); box-shadow:0 12px 30px rgba(54,47,38,.09); }
+      .refresh:hover { background:var(--paper); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div><div class="brand"><span aria-hidden="true">●</span> Pyykkisähkö</div><h1>Milloin kone päälle?</h1></div>
+      <button id="refresh" class="refresh" aria-label="Päivitä hinnat" title="Päivitä hinnat"><svg id="refreshIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5"/></svg></button>
+    </header>
+    <div id="message" hidden></div><section id="slots" class="slots" aria-live="polite" aria-busy="false"></section>
+    <p class="consumption-note">Kolmen laitteen kustannusarviot perustuvat tyypillisiin kulutuksiin: pesukone 0,5 kWh, lämpöpumppukuivausrumpu 1,05 kWh ja astianpesukoneen Eco-ohjelma 0,75 kWh.</p>
+    <footer><div id="updated">Odotetaan hintatietoja</div><div>Hinnat sisältävät ALV:n</div><div class="fine">Ei sisällä sähköyhtiön marginaalia eikä sähkönsiirtoa.</div></footer>
+    <div class="day-toggle-wrap"><nav class="day-toggle" aria-label="Valitse päivä"><button id="todayBtn" class="active" type="button" aria-pressed="true"><span class="day-main">Tänään</span></button><button id="tomorrowBtn" type="button" aria-pressed="false"><span class="day-main">Huomenna</span><span id="tomorrowHint" class="day-hint"></span></button></nav></div>
+  </main>
+<script>
+(() => {
+  'use strict';
+  const API = 'https://sahkotin.fi/prices';
+  const TZ = 'Europe/Helsinki';
+  const slotsEl = document.getElementById('slots');
+  const messageEl = document.getElementById('message');
+  const refreshBtn = document.getElementById('refresh');
+  const refreshIcon = document.getElementById('refreshIcon');
+  const updatedEl = document.getElementById('updated');
+  const todayBtn = document.getElementById('todayBtn');
+  const tomorrowBtn = document.getElementById('tomorrowBtn');
+  const tomorrowHint = document.getElementById('tomorrowHint');
+  let bestSlots = [], allAverage = 0, allHours = [], selectedDay = 'today';
+  const devices = [{name:'Pesukone',kwh:.5},{name:'Kuivausrumpu',kwh:1.05},{name:'Astianpesukone',kwh:.75}];
+  const dateFmt = new Intl.DateTimeFormat('sv-SE', { timeZone: TZ, year:'numeric', month:'2-digit', day:'2-digit' });
+  const hourFmt = new Intl.DateTimeFormat('fi-FI', { timeZone: TZ, hour:'2-digit', hourCycle:'h23' });
+  const dayTimeFmt = new Intl.DateTimeFormat('fi-FI', { timeZone: TZ, weekday:'short', day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit', hourCycle:'h23' });
+  const centsFmt = new Intl.NumberFormat('fi-FI', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  const euroFmt = new Intl.NumberFormat('fi-FI', { style:'currency', currency:'EUR' });
+  const dateKey = d => dateFmt.format(d);
+  const hourKey = d => dateKey(d) + 'T' + hourFmt.format(d);
+  const parts = d => Object.fromEntries(dayTimeFmt.formatToParts(d).map(p => [p.type, p.value]));
+  const pad = n => String(n).padStart(2, '0');
+
+  function groupHourly(raw) {
+    const buckets = new Map();
+    raw.forEach(item => {
+      const start = new Date(item.date), value = Number(item.value), key = hourKey(start);
+      if (!Number.isFinite(value) || Number.isNaN(start.getTime())) return;
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push({ start, value });
+    });
+    return [...buckets.values()].map(points => ({
+      start: new Date(Math.min(...points.map(p => p.start.getTime()))),
+      price: points.reduce((sum, p) => sum + p.value, 0) / points.length
+    })).sort((a,b) => a.start - b.start);
+  }
+
+  const periods = [{name:'Aamu',start:7,end:12},{name:'Päivä',start:12,end:17},{name:'Ilta',start:17,end:24}];
+  function localHour(d) { return Number(hourFmt.format(d)); }
+  function findBest(hours, targetDateKey) {
+    const candidates = [];
+    for (let i=0; i<=hours.length-3; i++) {
+      const slice=hours.slice(i,i+3), start=slice[0].start;
+      const continuous=slice.every((h,j)=>!j || Math.abs((h.start-slice[j-1].start)-3600000)<2000);
+      if(!continuous) continue;
+      const sh=localHour(start), endDate=new Date(start.getTime()+10800000);
+      // Ajanjakson otsikko määräytyy käynnistysajan mukaan. Klo 23.00 aloitettu
+      // iltajakso saa jatkua seuraavan vuorokauden puolelle klo 02.00 asti.
+      const period=periods.find(p => sh >= p.start && sh < p.end);
+      if(!period || dateKey(start) !== targetDateKey) continue;
+      candidates.push({period:period.name, start, end:endDate, avg:slice.reduce((sum,h)=>sum+h.price,0)/3, prices:slice.map(h=>h.price)});
+    }
+    return periods.map(period => candidates.filter(c=>c.period===period.name).sort((a,b)=>a.avg-b.avg)[0]).filter(Boolean).sort((a,b)=>a.avg-b.avg || a.start-b.start);
+  }
+
+  function label(slot) {
+    const s=parts(slot.start), e=parts(slot.end), today=dateKey(new Date()), tomorrow=dateKey(new Date(Date.now()+86400000));
+    const day = dateKey(slot.start)===today ? 'Tänään' : dateKey(slot.start)===tomorrow ? 'Huomenna' : `${s.weekday} ${s.day}.${s.month}.`;
+    return { day, time:`${pad(s.hour)}.${pad(s.minute)}–${pad(e.hour)}.${pad(e.minute)}` };
+  }
+
+  function updateTomorrowAvailability() {
+    const available = new Date().getHours() >= 14;
+    tomorrowBtn.disabled = !available;
+    tomorrowBtn.setAttribute('aria-disabled', String(!available));
+    tomorrowHint.textContent = available ? 'Hinnat julkaistu' : 'Saatavilla klo 14';
+    tomorrowBtn.title = available ? 'Näytä huomisen hinnat' : 'Huomisen hinnat ovat valittavissa klo 14 jälkeen';
+    if (!available && selectedDay === 'tomorrow') chooseDay('today');
+    return available;
+  }
+
+  function chooseDay(day) {
+    if (day === 'tomorrow' && new Date().getHours() < 14) return;
+    selectedDay = day;
+    todayBtn.classList.toggle('active', day === 'today');
+    tomorrowBtn.classList.toggle('active', day === 'tomorrow');
+    todayBtn.setAttribute('aria-pressed', day === 'today');
+    tomorrowBtn.setAttribute('aria-pressed', day === 'tomorrow');
+    updateForSelectedDay();
+  }
+
+  function updateForSelectedDay() {
+    const target = new Date();
+    if (selectedDay === 'tomorrow') target.setDate(target.getDate() + 1);
+    const targetKey = dateKey(target);
+    const now = new Date();
+    const nextFullHour = new Date(now); nextFullHour.setHours(nextFullHour.getHours()+1,0,0,0);
+    const targetEnd = new Date(target); targetEnd.setDate(targetEnd.getDate()+1); targetEnd.setHours(2,0,0,0);
+    const targetStart = new Date(target); targetStart.setHours(0,0,0,0);
+    const dayHours = allHours.filter(h => h.start >= targetStart && h.start < targetEnd && (selectedDay === 'tomorrow' || h.start >= nextFullHour));
+    const targetDayHours = dayHours.filter(h => dateKey(h.start) === targetKey);
+    allAverage = targetDayHours.length ? targetDayHours.reduce((sum,h)=>sum+h.price,0)/targetDayHours.length : 0;
+    bestSlots = findBest(dayHours, targetKey);
+    render();
+    if (!dayHours.length) showMessage(selectedDay === 'tomorrow' ? 'Huomisen hintatietoja ei ole vielä julkaistu. Ne tulevat tavallisesti saataville iltapäivällä.' : 'Tälle päivälle ei ole enää jäljellä sopivaa kolmen tunnin aloitusaikaa.');
+    else if (bestSlots.length < 3) showMessage('Näytetään valitun päivän jäljellä olevat edulliset kolmen tunnin aloitusajat.');
+    else showMessage('');
+  }
+
+  function render() {
+    slotsEl.innerHTML = bestSlots.map((slot,i) => {
+      const f=label(slot), saving=allAverage ? Math.max(0,(allAverage-slot.avg)/allAverage*100) : 0;
+      return `<button class="slot ${i===0?'best':''}" style="animation-delay:${i*70}ms" aria-expanded="false"><div class="slot-main"><div class="rank">${i+1}</div><div class="time-block"><div class="day">${slot.period} · ${f.day}</div><div class="time">${f.time}</div></div><div class="price">${centsFmt.format(slot.avg)} snt<div class="unit">/ kWh keskim.</div></div></div><div class="slot-foot"><div class="device-costs">${devices.map(d=>`<div class="device-cost"><div class="device-name">${d.name}</div><div class="device-price">${euroFmt.format(slot.avg*d.kwh/100)}</div></div>`).join('')}</div>${saving>=1?`<div class="saving" style="margin-top:8px;display:inline-block">noin ${Math.round(saving)} % alle keskitason</div>`:''}</div><div class="details">${slot.prices.map((p,j)=>`<div class="hour"><div class="hour-label">${j+1}. tunti</div><div class="hour-price">${centsFmt.format(p)} snt</div></div>`).join('')}</div></button>`;
+    }).join('');
+    slotsEl.querySelectorAll('.slot').forEach(el => el.addEventListener('click', () => { el.classList.toggle('open'); el.setAttribute('aria-expanded', el.classList.contains('open')); }));
+  }
+
+  function setLoading(on) {
+    refreshBtn.disabled=on; refreshIcon.classList.toggle('spin',on); slotsEl.setAttribute('aria-busy', String(on));
+    if(on) slotsEl.innerHTML='<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+  }
+  function showMessage(text,error=false) { messageEl.hidden=!text; messageEl.className='message'+(error?' error':''); messageEl.innerHTML=text ? `${text}${error?'<br><button class="retry" id="retry">Yritä uudelleen</button>':''}` : ''; if(error) document.getElementById('retry').onclick=load; }
+  async function load() {
+    setLoading(true); showMessage('');
+    try {
+      const now=new Date(), start=new Date(now.getTime()-7200000).toISOString(), end=new Date(now.getTime()+172800000).toISOString();
+      const url=`${API}?quarter&fix&vat&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      const response=await fetch(url,{cache:'no-store'});
+      if(!response.ok) throw new Error('HTTP '+response.status);
+      const data=await response.json();
+      if(!Array.isArray(data.prices)||!data.prices.length) throw new Error('Ei hintatietoja');
+      allHours=groupHourly(data.prices);
+      updateForSelectedDay();
+      updatedEl.textContent='✓ Päivitetty '+new Date().toLocaleTimeString('fi-FI',{hour:'2-digit',minute:'2-digit'});
+    } catch(err) {
+      slotsEl.innerHTML=''; showMessage('Hintatietojen haku ei juuri nyt onnistunut. Tarkista verkkoyhteys ja yritä hetken kuluttua uudelleen.',true);
+      console.error(err);
+    } finally { setLoading(false); }
+  }
+  refreshBtn.addEventListener('click',load);
+  todayBtn.addEventListener('click',()=>chooseDay('today'));
+  tomorrowBtn.addEventListener('click',()=>chooseDay('tomorrow'));
+  updateTomorrowAvailability();
+  setInterval(updateTomorrowAvailability, 60000);
+  load();
+})();
+</script>
+</body>
+</html>
